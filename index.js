@@ -1,7 +1,10 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json())
+
 const baseUrl = '/api/persons'
+const MAX_USERS = 121212
 
 let persons = [
     {
@@ -62,6 +65,40 @@ app.delete(`${baseUrl}/:id`, (request, response) => {
     const id = Number(request.params.id)
     persons = persons.filter(person => person.id !== id)
     response.status(204).end()
+})
+
+
+const getRandomInt = () => {
+    return Math.floor(Math.random() * MAX_USERS);
+}
+
+const responseWithError = (response, errorMsg) => {
+    return response.status(400).json({
+        error: errorMsg
+    })
+}
+
+app.post(baseUrl, (request, response) => {
+    const personToAdd = request.body;
+
+    if (!personToAdd.name || !personToAdd.number) {
+        return responseWithError(response, 'content missing')
+    }
+
+    const duplicatedPerson = persons.find(person => person.name === personToAdd.name)
+
+    if (duplicatedPerson) {
+        return responseWithError(response, 'name must be unique')
+    }
+
+    const newPerson = {
+        id: getRandomInt(),
+        name: personToAdd.name,
+        number: personToAdd.number
+    }
+
+    persons = persons.concat(newPerson)
+    response.json(newPerson)
 })
 
 const PORT = 3001
