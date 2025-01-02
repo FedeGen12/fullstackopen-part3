@@ -3,7 +3,6 @@ const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 const baseUrl = '/api/persons'
-// const MAX_USERS = 121212
 
 app.use(cors())
 app.use(express.static('dist'))
@@ -21,28 +20,29 @@ app.get(baseUrl, (request, response) => {
     })
 })
 
-// app.get('/info', (request, response) => {
-//     const formattedDate = new Date().toString();
-//
-//     const divInfo =
-//         `<div>
-//             <p>Phonebook has info for ${persons.length} people</p>
-//             <p>${formattedDate}</p>
-//         </div>`;
-//
-//     response.send(divInfo);
-// })
-//
-// app.get(`${baseUrl}/:id`, (request, response) => {
-//     const id = Number(request.params.id)
-//     const person = persons.find(person => person.id === id)
-//
-//     if (person) {
-//         response.json(person)
-//     } else {
-//         response.status(404).end()
-//     }
-// })
+app.get('/info', (request, response) => {
+    const formattedDate = new Date().toString();
+
+    Person.find({}).then(persons => {
+        const divInfo =
+            `<div>
+            <p>Phonebook has info for ${persons.length} people</p>
+            <p>${formattedDate}</p>
+        </div>`;
+
+        response.send(divInfo);
+    })
+})
+
+app.get(`${baseUrl}/:id`, (request, response) => {
+    Person.findById(request.params.id)
+        .then(person => {
+            response.json(person)
+        })
+        .catch(() => {
+            response.status(404).end()
+        })
+})
 
 app.delete(`${baseUrl}/:id`, (request, response) => {
     Person.findByIdAndDelete(request.params.id)
