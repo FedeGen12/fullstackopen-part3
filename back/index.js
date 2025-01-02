@@ -2,37 +2,18 @@ const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+const baseUrl = '/api/persons'
+// const MAX_USERS = 121212
 
 app.use(cors())
 app.use(express.static('dist'))
 app.use(express.json())
+require('dotenv').config()
 
 morgan.token('body', (req) => JSON.stringify(req.body));
 app.use(morgan(`:method :url :status :res[content-length] - :response-time ms :body`))
 
-const baseUrl = '/api/persons'
-const MAX_USERS = 121212
-const mongoose = require('mongoose')
-require('dotenv').config()
-
-mongoose.set('strictQuery',false)
-
-mongoose.connect(process.env.MONGODB_URI)
-
-const personSchema = mongoose.Schema({
-    name: String,
-    number: String
-})
-
-personSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
-})
-
-const Person = mongoose.model('Person', personSchema)
+const Person = require('./models/person')
 
 app.get(baseUrl, (request, response) => {
     Person.find({}).then(persons => {
