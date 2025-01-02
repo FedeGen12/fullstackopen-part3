@@ -53,44 +53,36 @@ app.delete(`${baseUrl}/:id`, (request, response) => {
         })
 })
 
-const responseWithError = (response, errorMsg) => {
-    return response.status(400).json({
-        error: errorMsg
-    })
-}
-
-app.post(baseUrl, (request, response) => {
+app.post(baseUrl, (request, response, next) => {
     const personToAdd = request.body;
-
-    if (!personToAdd.name || !personToAdd.number) {
-        return responseWithError(response, 'content missing')
-    }
-
-    Person.find({ name: personToAdd.name })
-        .then(() => {
-            return responseWithError(response, 'name must be unique')
-        })
 
     const newPerson = new Person({
         name: personToAdd.name,
         number: personToAdd.number
     })
 
-    newPerson.save().then(savedPerson => {
-        response.status(201).json(savedPerson)
-    })
+    newPerson.save()
+        .then(savedPerson => {
+            response.status(201).json(savedPerson)
+        })
+        .catch(error => next(error))
 })
 
-app.put(`${baseUrl}/:id`, (request, response) => {
+app.put(`${baseUrl}/:id`, (request, response, next) => {
     const newPerson = {
         name: request.body.name,
         number: request.body.number
     }
 
-    Person.findByIdAndUpdate(request.params.id, newPerson, { new: true })
+    Person.findByIdAndUpdate(
+        request.params.id,
+        newPerson,
+        { new: true, runValidators: true, context: 'query' }
+    )
         .then(updatedPerson => {
             response.json(updatedPerson)
         })
+        .catch(error => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
@@ -104,6 +96,8 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError' || error.name === 'MongoServerError') {
+        return response.status(400).json({ error: error.message })
     }
 
     next(error)

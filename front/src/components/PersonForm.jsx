@@ -48,6 +48,9 @@ const PersonForm = ({ persons, updatePersons, showMessage }) => {
                 updateState(persons.concat(createdPerson))
                 showMessage(`Added ${createdPerson.name}`, "success", timeout)
             })
+            .catch(error => {
+                showMessage(`${error.response.data.error}`, "error", timeout)
+            })
     }
 
 
