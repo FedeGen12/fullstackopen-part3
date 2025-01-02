@@ -9,7 +9,7 @@ mongoose.connect(process.env.MONGODB_URI)
         console.log('error connecting to MongoDB:', error.message)
     })
 
-const personSchema = mongoose.Schema({
+const personSchema = new mongoose.Schema({
     name: String,
     number: String
 })
