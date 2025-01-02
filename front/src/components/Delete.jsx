@@ -7,8 +7,8 @@ const handlerDelete = (persons, personToDelete, updatePersons, showMessage) => {
     if (confirmedDeletion) {
         personService
             .deletePerson(personToDelete.id)
-            .then(personDeleted => {
-                const filteredPersons = persons.filter(person => person.id !== personDeleted.id)
+            .then(() => {
+                const filteredPersons = persons.filter(person => person.id !== personToDelete.id)
                 updatePersons(filteredPersons)
             })
             .catch(() => {
