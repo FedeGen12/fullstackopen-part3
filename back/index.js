@@ -64,11 +64,10 @@ app.post(baseUrl, (request, response) => {
         return responseWithError(response, 'content missing')
     }
 
-    // const duplicatedPerson = persons.find(person => person.name === personToAdd.name)
-    //
-    // if (duplicatedPerson) {
-    //     return responseWithError(response, 'name must be unique')
-    // }
+    Person.find({ name: personToAdd.name })
+        .then(() => {
+            return responseWithError(response, 'name must be unique')
+        })
 
     const newPerson = new Person({
         name: personToAdd.name,
@@ -78,6 +77,18 @@ app.post(baseUrl, (request, response) => {
     newPerson.save().then(savedPerson => {
         response.status(201).json(savedPerson)
     })
+})
+
+app.put(`${baseUrl}/:id`, (request, response) => {
+    const newPerson = {
+        name: request.body.name,
+        number: request.body.number
+    }
+
+    Person.findByIdAndUpdate(request.params.id, newPerson, { new: true })
+        .then(updatedPerson => {
+            response.json(updatedPerson)
+        })
 })
 
 const PORT = process.env.PORT
